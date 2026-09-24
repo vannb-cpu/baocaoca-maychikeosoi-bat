@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Báo cáo ca — Máy chỉ kéo sợi (Bạt)</title>
+<style>
+  :root{
+    --ink:#1c2430;
+    --ink-soft:#4b5563;
+    --line:#dfe3e8;
+    --card:#ffffff;
+    --paper:#f4f5f3;
+    --navy:#1e3a4c;
+    --navy-deep:#152834;
+    --amber:#d97b1f;
+    --amber-deep:#b6650f;
+    --good:#2f7d5a;
+    --bad:#b23b3b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    padding-top:env(safe-area-inset-top,0px);
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  header.top{
+    background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);
+    color:#fff;
+    padding:22px 20px 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-40px;
+    width:160px; height:160px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.06);
+  }
+  header.top .eyebrow{font-size:13px;color:#a9c2cf;letter-spacing:.02em;margin:0 0 6px;}
+  header.top h1{font-size:21px;line-height:1.3;margin:0 0 8px;font-weight:700;}
+  header.top p{margin:0;font-size:13.5px;color:#c7d6dd;line-height:1.5;max-width:46ch;}
+
+  main{max-width:640px;margin:0 auto;padding:16px 14px 110px;}
+
+  .section{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .section-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    background:#fbfbfa;
+  }
+  .section-head .num{
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--navy);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .section-head h2{font-size:14.5px;margin:0;font-weight:700;letter-spacing:.01em;color:var(--navy-deep);}
+  .section-body{padding:16px;}
+
+  .field{margin-bottom:18px;}
+  .field:last-child{margin-bottom:0;}
+  .field label.q{display:block;font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:8px;line-height:1.4;}
+  .field .hint{font-size:12.5px;color:var(--ink-soft);margin:-4px 0 8px;}
+  .req{color:var(--bad); margin-left:2px;}
+
+  input[type=text], input[type=number], input[type=date], select, textarea{
+    width:100%;
+    font-size:16px;
+    padding:12px 13px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  input:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(30,58,76,0.12);
+  }
+
+  .choice-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .choice-grid.cols-2 .choice{flex:1 1 calc(50% - 4px);}
+  .choice-grid.cols-3 .choice{flex:1 1 calc(33.333% - 6px);}
+  .choice-grid.cols-6 .choice{flex:1 1 calc(16.666% - 7px); min-width:44px;}
+
+  .choice{position:relative;}
+  .choice input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .choice .box{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:11px 8px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    background:#fff;
+    min-height:44px;
+    line-height:1.3;
+  }
+  .choice input:checked + .box{border-color:var(--navy); background:var(--navy); color:#fff;}
+  .choice input:focus-visible + .box{box-shadow:0 0 0 3px rgba(30,58,76,0.25);}
+
+  .other-row{margin-top:10px;}
+
+  footer.bar{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    background:#fff;
+    border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+    display:flex;
+    justify-content:center;
+    gap:10px;
+  }
+  button.submit{
+    width:100%;
+    max-width:640px;
+    background:var(--amber);
+    color:#fff;
+    border:none;
+    padding:15px 20px;
+    font-size:16px;
+    font-weight:700;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  button.submit:active{background:var(--amber-deep);}
+  button.submit:disabled{background:#c9b9a5;cursor:not-allowed;}
+  button.secondary{
+    flex:0 0 auto;
+    background:#fff;
+    color:var(--navy);
+    border:1.5px solid var(--navy);
+    padding:15px 18px;
+    font-size:15px;
+    font-weight:700;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  button.secondary:active{background:#eef2f4;}
+
+  #reviewScreen{display:none;max-width:640px;margin:0 auto;padding:16px 14px 110px;}
+  .review-note{
+    font-size:13px;
+    color:var(--ink-soft);
+    background:#eaf1fd;
+    border:1px solid #c7d9f0;
+    border-radius:10px;
+    padding:10px 14px;
+    margin-bottom:14px;
+  }
+  .review-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .review-card-head{
+    padding:12px 16px;
+    background:#fbfbfa;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    font-weight:700;
+    color:var(--navy-deep);
+  }
+  .review-card.machine .review-card-head{background:var(--navy);color:#fff;}
+  .review-card-body{padding:6px 16px;}
+  .review-row{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .review-row:last-child{border-bottom:none;}
+  .review-label{color:var(--ink-soft);flex:0 0 48%;}
+  .review-value{color:var(--ink);font-weight:600;text-align:right;flex:1;word-break:break-word;}
+
+  .error-msg{font-size:12.5px;color:var(--bad);margin-top:6px;display:none;}
+  .field.invalid label.q{color:var(--bad);}
+  .field.invalid .error-msg{display:block;}
+  .field.invalid input[type=text],
+  .field.invalid input[type=number],
+  .field.invalid input[type=date],
+  .field.invalid select,
+  .field.invalid textarea{border-color:var(--bad);}
+
+  /* Khối máy (lặp lại) */
+  .machine-block{
+    background:var(--card);
+    border:1.5px solid var(--navy);
+    border-radius:var(--radius);
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .machine-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:14px 16px;
+    background:var(--navy);
+    color:#fff;
+  }
+  .machine-head h2{margin:0;font-size:15px;font-weight:700;}
+  .btn-remove-machine{
+    background:rgba(255,255,255,0.12);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .machine-body{padding:16px;}
+  .sub-head{
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin:20px 0 12px;
+    padding-top:16px;
+    border-top:1px dashed var(--line);
+  }
+  .sub-head:first-child{margin-top:0;padding-top:0;border-top:none;}
+
+  .add-machine-wrap{
+    display:flex;
+    justify-content:center;
+    margin:6px 0 18px;
+  }
+  button.add-machine{
+    width:100%;
+    background:#fff;
+    color:var(--navy);
+    border:1.5px dashed var(--navy);
+    padding:13px 16px;
+    font-size:14.5px;
+    font-weight:700;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  button.add-machine:active{background:#eef2f4;}
+
+  #successScreen{display:none;max-width:640px;margin:60px auto;padding:40px 24px;text-align:center;}
+  #successScreen .tick{
+    width:64px;height:64px;
+    border-radius:50%;
+    background:var(--good);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+    font-size:30px;
+  }
+  #successScreen h2{margin:0 0 8px;font-size:19px;color:var(--navy-deep);}
+  #successScreen p{margin:0 0 22px;color:var(--ink-soft);font-size:14px;}
+  #successScreen button{
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:10px;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  #banner{
+    display:none;
+    max-width:640px;
+    margin:12px auto 0;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:13px;
+    background:#fdecec;
+    color:var(--bad);
+    border:1px solid #f3caca;
+  }
+  #banner.info{background:#eaf1fd;color:var(--navy-deep);border-color:#c7d9f0;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">Nhà máy Yên Bái · Xưởng Máy chỉ kéo sợi · BẠT</p>
+  <h1>BÁO CÁO CA — MÁY CHỈ KÉO SỢI (BẠT)</h1>
+  <p>Tổ trưởng ca điền và gửi khi kết thúc ca. Ca chạy nhiều máy thì bấm "Thêm máy" để khai báo từng máy trong cùng 1 lần gửi.</p>
+</header>
+
+<div id="banner"></div>
+
+<main id="formWrap">
+  <form id="reportForm" novalidate>
+
+    <!-- THÔNG TIN CHUNG CỦA CA -->
+    <div class="section">
+      <div class="section-head"><div class="num">1</div><h2>Thông tin ca</h2></div>
+      <div class="section-body">
+
+        <div class="field" data-required="true" data-name="Ca làm việc">
+          <label class="q">Ca làm việc<span class="req">*</span></label>
+          <div class="choice-grid cols-2">
+            <label class="choice"><input type="radio" name="ca_lam_viec" value="Ca ngày" data-field="ca_lam_viec"><span class="box">Ca ngày</span></label>
+            <label class="choice"><input type="radio" name="ca_lam_viec" value="Ca đêm" data-field="ca_lam_viec"><span class="box">Ca đêm</span></label>
+          </div>
+          <div class="error-msg">Chọn ca làm việc.</div>
+        </div>
+
+        <div class="field" data-required="true" data-name="Ngày sản xuất">
+          <label class="q">Ngày sản xuất<span class="req">*</span></label>
+          <input type="date" name="ngay_san_xuat" data-field="ngay_san_xuat">
+          <div class="error-msg">Nhập ngày sản xuất.</div>
+        </div>
+
+        <div class="field" data-required="true" data-name="Họ tên trưởng ca">
+          <label class="q">Họ tên trưởng ca<span class="req">*</span></label>
+          <select name="ho_ten_truong_ca" data-field="ho_ten_truong_ca">
+            <option value="" disabled selected>— Chọn tên —</option>
+            <option value="Lê Huỳnh Đức">Lê Huỳnh Đức</option>
+            <option value="Nguyễn Minh Đức">Nguyễn Minh Đức</option>
+            <option value="Đặng Đức Thiện">Đặng Đức Thiện</option>
+            <option value="Lý Hữu Ngọc">Lý Hữu Ngọc</option>
+            <option value="Dương Trung Tuấn">Dương Trung Tuấn</option>
+            <option value="Lý Hữu Xuân">Lý Hữu Xuân</option>
+            <option value="Triệu Đình Vượng">Triệu Đình Vượng</option>
+          </select>
+          <div class="error-msg">Nhập họ tên trưởng ca.</div>
+        </div>
+
+        <div class="field" data-name="Số người làm trong ca">
+          <label class="q">Số người làm trong ca</label>
+          <input type="number" inputmode="numeric" name="so_nguoi_lam" data-field="so_nguoi_lam" placeholder="Ví dụ: 3">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CÁC KHỐI MÁY -->
+    <div id="machinesContainer"></div>
+
+    <div class="add-machine-wrap">
+      <button type="button" class="add-machine" id="btnAddMachine">+ Thêm máy khác chạy trong ca này</button>
+    </div>
+
+    <!-- BÀN GIAO CA (chung cho cả ca, điền 1 lần) -->
+    <div class="section">
+      <div class="section-head"><div class="num">2</div><h2>Bàn giao ca</h2></div>
+      <div class="section-body">
+
+        <div class="field" data-name="Đề xuất nguyên liệu/vật tư cho ca sau">
+          <label class="q">Đề xuất nguyên liệu/vật tư cho ca sau</label>
+          <textarea data-field="de_xuat_ca_sau"></textarea>
+        </div>
+
+        <div class="field" data-name="Ghi chú/kiến nghị khác">
+          <label class="q">Ghi chú/kiến nghị khác</label>
+          <textarea data-field="ghi_chu_khac"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+  </form>
+</main>
+
+<!-- TEMPLATE 1 KHỐI MÁY -->
+<template id="machineTemplate">
+  <div class="machine-block" data-block>
+    <div class="machine-head">
+      <h2>Máy <span class="machine-index">1</span></h2>
+      <button type="button" class="btn-remove-machine">Xoá máy này</button>
+    </div>
+    <div class="machine-body">
+
+      <div class="field" data-required="true" data-name="Máy số">
+        <label class="q">Máy số<span class="req">*</span></label>
+        <div class="choice-grid cols-6">
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="1" data-field="may_so"><span class="box">1</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="2" data-field="may_so"><span class="box">2</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="3" data-field="may_so"><span class="box">3</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="4" data-field="may_so"><span class="box">4</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="5" data-field="may_so"><span class="box">5</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__may_so" value="6" data-field="may_so"><span class="box">6</span></label>
+        </div>
+        <div class="error-msg">Chọn máy số.</div>
+      </div>
+
+      <div class="field" data-required="true" data-name="Mã sản phẩm/loại chỉ đang chạy">
+        <label class="q">Mã sản phẩm/loại chỉ đang chạy<span class="req">*</span></label>
+        <select data-field="ma_san_pham">
+          <option value="" disabled selected>— Chọn mã —</option>
+          <option value="440NXK">440NXK</option>
+          <option value="575TXK">575TXK</option>
+          <option value="520 XPT">520 XPT</option>
+          <option value="500 XPT">500 XPT</option>
+          <option value="670D">670D</option>
+          <option value="750XKA">750XKA</option>
+          <option value="610XKA">610XKA</option>
+          <option value="850TC">850TC</option>
+          <option value="440TTXK">440TTXK</option>
+          <option value="620B">620B</option>
+          <option value="530URE">530URE</option>
+          <option value="650TPT">650TPT</option>
+          <option value="840TC">840TC</option>
+        </select>
+        <div class="error-msg">Chọn mã sản phẩm.</div>
+      </div>
+
+      <div class="sub-head">Nguyên liệu &amp; sản lượng</div>
+
+      <div class="field" data-name="Lượng nguyên liệu tiêu hao trong ca (kg)">
+        <label class="q">Lượng nguyên liệu tiêu hao trong ca (kg)</label>
+        <input type="number" inputmode="decimal" data-field="nl_tieu_hao_kg">
+      </div>
+
+      <div class="field" data-required="true" data-name="Sản lượng thành phẩm trong ca (kg)">
+        <label class="q">Sản lượng thành phẩm trong ca (kg)<span class="req">*</span></label>
+        <input type="number" inputmode="decimal" data-field="san_luong_kg">
+        <div class="error-msg">Nhập sản lượng thành phẩm.</div>
+      </div>
+
+      <div class="field" data-name="Lượng phế thải ra trong ca (kg)">
+        <label class="q">Lượng phế thải ra trong ca (kg)</label>
+        <input type="number" inputmode="decimal" data-field="phe_thai_kg">
+      </div>
+
+      <div class="field" data-name="Lượng nguyên liệu múc ra / nguyên liệu dở dang (kg)">
+        <label class="q">Lượng nguyên liệu múc ra / nguyên liệu dở dang (kg)</label>
+        <input type="number" inputmode="decimal" data-field="nl_do_dang_kg">
+      </div>
+
+      <div class="sub-head">Vận hành &amp; bảo trì trong ca</div>
+
+      <div class="field" data-required="true" data-name="Số lần thay lưới sơ cấp trong ca">
+        <label class="q">Số lần thay lưới sơ cấp trong ca<span class="req">*</span></label>
+        <input type="number" inputmode="numeric" data-field="thay_luoi_so_cap">
+        <div class="error-msg">Nhập số lần thay lưới sơ cấp.</div>
+      </div>
+
+      <div class="field" data-name="Số lần thay lưới thứ cấp trong ca">
+        <label class="q">Số lần thay lưới thứ cấp trong ca</label>
+        <input type="number" inputmode="numeric" data-field="thay_luoi_thu_cap">
+      </div>
+
+      <div class="field" data-required="true" data-name="Tổng thời gian dừng máy trong ca (phút)">
+        <label class="q">Tổng thời gian dừng máy trong ca (phút)<span class="req">*</span></label>
+        <input type="number" inputmode="numeric" data-field="thoi_gian_dung_may">
+        <div class="error-msg">Nhập tổng thời gian dừng máy (có thể ghi 0).</div>
+      </div>
+
+      <div class="field" data-name="Lý do dừng máy">
+        <label class="q">Lý do dừng máy</label>
+        <div class="hint">Có thể chọn nhiều lý do.</div>
+        <div class="choice-grid cols-2">
+          <label class="choice"><input type="checkbox" value="Thay lưới" data-field="ly_do_dung_may"><span class="box">Thay lưới</span></label>
+          <label class="choice"><input type="checkbox" value="Đổi chỉ" data-field="ly_do_dung_may"><span class="box">Đổi chỉ</span></label>
+          <label class="choice"><input type="checkbox" value="Sự cố thiết bị" data-field="ly_do_dung_may"><span class="box">Sự cố thiết bị</span></label>
+          <label class="choice"><input type="checkbox" value="Vệ sinh bể - lưới" data-field="ly_do_dung_may"><span class="box">Vệ sinh bể - lưới</span></label>
+          <label class="choice"><input type="checkbox" value="Mất điện" data-field="ly_do_dung_may"><span class="box">Mất điện</span></label>
+          <label class="choice"><input type="checkbox" value="Thiếu nguyên liệu" data-field="ly_do_dung_may"><span class="box">Thiếu nguyên liệu</span></label>
+          <label class="choice"><input type="checkbox" value="Chờ xe nâng" data-field="ly_do_dung_may"><span class="box">Chờ xe nâng</span></label>
+        </div>
+        <div class="other-row">
+          <input type="text" data-field="ly_do_dung_may_khac" placeholder="Khác (nếu có, ghi rõ)">
+        </div>
+      </div>
+
+      <div class="sub-head">Chất lượng sợi</div>
+
+      <div class="field" data-name="Kiểm tra lực kéo (máy cân lực)">
+        <label class="q">Kiểm tra lực kéo (máy cân lực)</label>
+        <div class="choice-grid cols-3">
+          <label class="choice"><input type="radio" name="TEMPLATE__luc_keo" value="Đạt" data-field="luc_keo"><span class="box">Đạt</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__luc_keo" value="Không đạt" data-field="luc_keo"><span class="box">Không đạt</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__luc_keo" value="Chưa kiểm tra" data-field="luc_keo"><span class="box">Chưa kiểm tra</span></label>
+        </div>
+      </div>
+
+      <div class="field" data-name="Định lượng/bản sợi">
+        <label class="q">Định lượng/bản sợi</label>
+        <div class="choice-grid cols-3">
+          <label class="choice"><input type="radio" name="TEMPLATE__dinh_luong_ban_soi" value="Đạt" data-field="dinh_luong_ban_soi"><span class="box">Đạt</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__dinh_luong_ban_soi" value="Lệch nhẹ" data-field="dinh_luong_ban_soi"><span class="box">Lệch nhẹ</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__dinh_luong_ban_soi" value="Không đạt" data-field="dinh_luong_ban_soi"><span class="box">Không đạt</span></label>
+        </div>
+      </div>
+
+      <div class="field" data-name="Độ xơ xước sợi">
+        <label class="q">Độ xơ xước sợi</label>
+        <div class="choice-grid cols-3">
+          <label class="choice"><input type="radio" name="TEMPLATE__do_xo_xuoc" value="Tốt" data-field="do_xo_xuoc"><span class="box">Tốt</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__do_xo_xuoc" value="Nhẹ" data-field="do_xo_xuoc"><span class="box">Nhẹ</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__do_xo_xuoc" value="Nhiều" data-field="do_xo_xuoc"><span class="box">Nhiều</span></label>
+        </div>
+      </div>
+
+      <div class="field" data-name="Lỗi sợi phát hiện (mô tả)">
+        <label class="q">Lỗi sợi phát hiện (mô tả)</label>
+        <textarea data-field="loi_soi_phat_hien"></textarea>
+      </div>
+
+      <div class="field" data-name="Bù chỉ lỗi bên dệt trả trong ca (kg)">
+        <label class="q">Bù chỉ lỗi bên dệt trả trong ca (kg)</label>
+        <input type="number" inputmode="decimal" data-field="bu_chi_loi_kg">
+      </div>
+
+      <div class="field" data-required="true" data-name="Tình trạng máy cuối ca">
+        <label class="q">Tình trạng máy cuối ca<span class="req">*</span></label>
+        <div class="choice-grid cols-2">
+          <label class="choice"><input type="radio" name="TEMPLATE__tinh_trang_may" value="Đang chạy bình thường" data-field="tinh_trang_may"><span class="box">Đang chạy bình thường</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__tinh_trang_may" value="Dừng theo kế hoạch" data-field="tinh_trang_may"><span class="box">Dừng theo kế hoạch</span></label>
+          <label class="choice"><input type="radio" name="TEMPLATE__tinh_trang_may" value="Dừng cho sự cố" data-field="tinh_trang_may"><span class="box">Dừng cho sự cố</span></label>
+        </div>
+        <div class="error-msg">Chọn tình trạng máy cuối ca.</div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<div id="reviewScreen">
+  <div class="review-note">Chị kiểm tra lại toàn bộ câu trả lời dưới đây. Nếu đúng, bấm "Xác nhận gửi" ở dưới; nếu cần sửa, bấm "← Sửa lại".</div>
+  <div id="reviewContent"></div>
+</div>
+
+<div id="successScreen">
+  <div class="tick">✓</div>
+  <h2>Đã gửi báo cáo</h2>
+  <p id="successDetail">Cảm ơn tổ trưởng ca. Báo cáo đã được ghi nhận.</p>
+  <button id="btnAgain" type="button">Gửi báo cáo mới</button>
+</div>
+
+<footer class="bar" id="submitBar">
+  <button class="submit" id="btnSubmit" type="button">Xem lại &amp; Gửi báo cáo</button>
+</footer>
+
+<footer class="bar" id="reviewBar" style="display:none;">
+  <button class="secondary" id="btnBackToForm" type="button">← Sửa lại</button>
+  <button class="submit" id="btnConfirmSend" type="button">Xác nhận gửi</button>
+</footer>
+
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzP3BepKVrUfZaKPKl6nsu2DBoOSAoztCIs1UEncU2pCijNgZCqrQQmdafPbx2RHe_88g/exec";
+  const NHA_MAY = "Bạt";
+
+  const form = document.getElementById('reportForm');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const banner = document.getElementById('banner');
+  const machinesContainer = document.getElementById('machinesContainer');
+  const machineTemplate = document.getElementById('machineTemplate');
+  const btnAddMachine = document.getElementById('btnAddMachine');
+
+  const FIELD_LABELS = {
+    ca_lam_viec: 'Ca làm việc',
+    ngay_san_xuat: 'Ngày sản xuất',
+    nha_may: 'Thuộc nhà máy',
+    ho_ten_truong_ca: 'Họ tên trưởng ca',
+    so_nguoi_lam: 'Số người làm trong ca',
+    may_so: 'Máy số',
+    ma_san_pham: 'Mã sản phẩm/loại chỉ',
+    loai_nguyen_lieu: 'Loại nguyên liệu',
+    nl_tieu_hao_kg: 'NL tiêu hao (kg)',
+    san_luong_kg: 'Sản lượng (kg)',
+    so_cuon_soi: 'Số cuộn sợi hoàn thành',
+    phe_thai_kg: 'Phế thải (kg)',
+    nl_do_dang_kg: 'NL múc ra/dở dang (kg)',
+    thay_luoi_so_cap: 'Thay lưới sơ cấp',
+    thay_luoi_thu_cap: 'Thay lưới thứ cấp',
+    thoi_gian_dung_may: 'TG dừng máy (phút)',
+    ly_do_dung_may: 'Lý do dừng máy',
+    ve_sinh_hut_chan_khong: 'Vệ sinh hút chân không',
+    co_su_co: 'Có sự cố thiết bị',
+    mo_ta_su_co: 'Mô tả sự cố',
+    luc_keo: 'Kiểm tra lực kéo',
+    dinh_luong_ban_soi: 'Định lượng/bản sợi',
+    do_xo_xuoc: 'Độ xơ xước sợi',
+    loi_soi_phat_hien: 'Lỗi sợi phát hiện',
+    bu_chi_loi_kg: 'Bù chỉ lỗi (kg)',
+    tinh_trang_may: 'Tình trạng máy cuối ca',
+    de_xuat_ca_sau: 'Đề xuất ca sau',
+    ghi_chu_khac: 'Ghi chú khác'
+  };
+  const SHARED_ORDER = ['ca_lam_viec','ngay_san_xuat','nha_may','ho_ten_truong_ca','so_nguoi_lam'];
+  const MACHINE_ORDER = ['may_so','ma_san_pham','nl_tieu_hao_kg','san_luong_kg','phe_thai_kg','nl_do_dang_kg','thay_luoi_so_cap','thay_luoi_thu_cap','thoi_gian_dung_may','ly_do_dung_may','luc_keo','dinh_luong_ban_soi','do_xo_xuoc','loi_soi_phat_hien','bu_chi_loi_kg','tinh_trang_may'];
+  const HANDOVER_ORDER = ['de_xuat_ca_sau','ghi_chu_khac'];
+
+  let blockCounter = 0;
+
+  function showBanner(msg, type){
+    banner.textContent = msg;
+    banner.className = type === 'info' ? 'info' : '';
+    banner.style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  function hideBanner(){ banner.style.display = 'none'; }
+
+  function renumberMachines(){
+    const blocks = machinesContainer.querySelectorAll('.machine-block');
+    blocks.forEach((b, i) => {
+      b.querySelector('.machine-index').textContent = i + 1;
+      const removeBtn = b.querySelector('.btn-remove-machine');
+      removeBtn.style.visibility = blocks.length > 1 ? 'visible' : 'hidden';
+    });
+  }
+
+  function addMachineBlock(){
+    blockCounter += 1;
+    const blockId = blockCounter;
+    const fragment = machineTemplate.content.cloneNode(true);
+    const blockEl = fragment.querySelector('.machine-block');
+
+    // Namespace tên các nhóm radio để không xung đột giữa các khối máy
+    blockEl.querySelectorAll('input[name^="TEMPLATE__"]').forEach(input => {
+      input.name = input.name.replace('TEMPLATE__', 'b' + blockId + '__');
+    });
+
+    blockEl.querySelector('.btn-remove-machine').addEventListener('click', () => {
+      blockEl.remove();
+      renumberMachines();
+    });
+
+    machinesContainer.appendChild(blockEl);
+    renumberMachines();
+  }
+
+  btnAddMachine.addEventListener('click', addMachineBlock);
+
+  // Luôn có sẵn 1 khối máy khi mở trang
+  addMachineBlock();
+
+  function clearErrors(){
+    form.querySelectorAll('.field.invalid').forEach(f => f.classList.remove('invalid'));
+  }
+
+  function isFieldFilled(field){
+    const radios = field.querySelectorAll('input[type=radio]');
+    if(radios.length){
+      return Array.from(radios).some(r => r.checked);
+    }
+    const el = field.querySelector('input[type=text], input[type=number], input[type=date], select, textarea');
+    return el ? (el.value !== null && el.value.toString().trim() !== '') : false;
+  }
+
+  function validate(){
+    clearErrors();
+    let firstInvalid = null;
+    let ok = true;
+
+    // Thông tin chung của ca
+    document.querySelectorAll('#formWrap > form > .section .field[data-required="true"]').forEach(field => {
+      if(!isFieldFilled(field)){
+        field.classList.add('invalid');
+        ok = false;
+        if(!firstInvalid) firstInvalid = field;
+      }
+    });
+
+    // Từng khối máy
+    const blocks = machinesContainer.querySelectorAll('.machine-block');
+    if(blocks.length === 0){
+      ok = false;
+      showBanner('Cần khai báo ít nhất 1 máy đã chạy trong ca.');
+    }
+    blocks.forEach(block => {
+      block.querySelectorAll('.field[data-required="true"]').forEach(field => {
+        if(!isFieldFilled(field)){
+          field.classList.add('invalid');
+          ok = false;
+          if(!firstInvalid) firstInvalid = field;
+        }
+      });
+    });
+
+    if(firstInvalid){
+      firstInvalid.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+    return ok;
+  }
+
+  function collectShared(){
+    const data = { nha_may: NHA_MAY };
+    document.querySelectorAll('#formWrap > form > .section [data-field]').forEach(el => {
+      if(el.type === 'radio'){
+        if(el.checked) data[el.dataset.field] = el.value;
+      } else {
+        data[el.dataset.field] = el.value;
+      }
+    });
+    return data;
+  }
+
+  function collectBlock(block){
+    const data = {};
+    block.querySelectorAll('[data-field]').forEach(el => {
+      if(el.type === 'radio'){
+        if(el.checked) data[el.dataset.field] = el.value;
+      } else if(el.type === 'checkbox'){
+        if(el.checked){
+          data[el.dataset.field] = data[el.dataset.field]
+            ? data[el.dataset.field] + ', ' + el.value
+            : el.value;
+        }
+      } else {
+        if(!(el.dataset.field in data) || data[el.dataset.field] === ''){
+          data[el.dataset.field] = el.value;
+        }
+      }
+    });
+
+    if(data.ly_do_dung_may_khac && data.ly_do_dung_may_khac.trim() !== ''){
+      data.ly_do_dung_may = data.ly_do_dung_may
+        ? data.ly_do_dung_may + ', ' + data.ly_do_dung_may_khac.trim()
+        : data.ly_do_dung_may_khac.trim();
+    }
+    delete data.ly_do_dung_may_khac;
+
+    return data;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str === undefined || str === null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function renderRows(data, order){
+    let html = '';
+    order.forEach(key => {
+      const val = data[key];
+      if(val !== undefined && val !== null && String(val).trim() !== ''){
+        html += '<div class="review-row"><span class="review-label">' + escapeHtml(FIELD_LABELS[key] || key) +
+          '</span><span class="review-value">' + escapeHtml(val) + '</span></div>';
+      }
+    });
+    return html || '<div class="review-row"><span class="review-label">(không có dữ liệu)</span></div>';
+  }
+
+  function renderReview(shared, blockDataList, handover){
+    let html = '';
+
+    html += '<div class="review-card"><div class="review-card-head">Thông tin ca</div>' +
+      '<div class="review-card-body">' + renderRows(shared, SHARED_ORDER) + '</div></div>';
+
+    blockDataList.forEach((data, i) => {
+      html += '<div class="review-card machine"><div class="review-card-head">Máy ' + (i + 1) + '</div>' +
+        '<div class="review-card-body">' + renderRows(data, MACHINE_ORDER) + '</div></div>';
+    });
+
+    html += '<div class="review-card"><div class="review-card-head">Bàn giao ca</div>' +
+      '<div class="review-card-body">' + renderRows(handover, HANDOVER_ORDER) + '</div></div>';
+
+    document.getElementById('reviewContent').innerHTML = html;
+  }
+
+  function showReviewScreen(){
+    document.getElementById('formWrap').style.display = 'none';
+    document.getElementById('submitBar').style.display = 'none';
+    document.getElementById('reviewScreen').style.display = 'block';
+    document.getElementById('reviewBar').style.display = 'flex';
+    window.scrollTo({top:0});
+  }
+
+  function showFormScreen(){
+    document.getElementById('reviewScreen').style.display = 'none';
+    document.getElementById('reviewBar').style.display = 'none';
+    document.getElementById('formWrap').style.display = 'block';
+    document.getElementById('submitBar').style.display = 'flex';
+    window.scrollTo({top:0});
+  }
+
+  btnSubmit.addEventListener('click', () => {
+    hideBanner();
+    if(!validate()){
+      showBanner('Vui lòng điền đủ các mục có dấu * trước khi gửi.');
+      return;
+    }
+
+    const shared = collectShared();
+    const blocks = Array.from(machinesContainer.querySelectorAll('.machine-block'));
+    const blockDataList = blocks.map(collectBlock);
+    const handover = {
+      de_xuat_ca_sau: document.querySelector('[data-field="de_xuat_ca_sau"]').value,
+      ghi_chu_khac: document.querySelector('[data-field="ghi_chu_khac"]').value
+    };
+
+    renderReview(shared, blockDataList, handover);
+    showReviewScreen();
+  });
+
+  document.getElementById('btnBackToForm').addEventListener('click', () => {
+    showFormScreen();
+  });
+
+  document.getElementById('btnConfirmSend').addEventListener('click', async () => {
+    const btnConfirmSend = document.getElementById('btnConfirmSend');
+    const btnBackToForm = document.getElementById('btnBackToForm');
+
+    const shared = collectShared();
+    const blocks = Array.from(machinesContainer.querySelectorAll('.machine-block'));
+    const total = blocks.length;
+
+    btnConfirmSend.disabled = true;
+    btnBackToForm.disabled = true;
+
+    let sentCount = 0;
+    try{
+      for(let i = 0; i < blocks.length; i++){
+        btnConfirmSend.textContent = 'Đang gửi máy ' + (i + 1) + '/' + total + '...';
+        const payload = Object.assign({}, shared, collectBlock(blocks[i]));
+        await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {'Content-Type':'application/x-www-form-urlencoded'},
+          body: new URLSearchParams(payload)
+        });
+        sentCount++;
+      }
+
+      document.getElementById('successDetail').textContent =
+        'Đã ghi nhận báo cáo cho ' + sentCount + ' máy trong ca này.';
+      document.getElementById('reviewScreen').style.display = 'none';
+      document.getElementById('reviewBar').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+    }catch(err){
+      showFormScreen();
+      showBanner('Đã gửi được ' + sentCount + '/' + total + ' máy thì bị lỗi mạng — kiểm tra mạng rồi thử gửi lại.');
+    }finally{
+      btnConfirmSend.disabled = false;
+      btnBackToForm.disabled = false;
+      btnConfirmSend.textContent = 'Xác nhận gửi';
+    }
+  });
+
+  document.getElementById('btnAgain').addEventListener('click', () => {
+    form.reset();
+    clearErrors();
+    machinesContainer.innerHTML = '';
+    blockCounter = 0;
+    addMachineBlock();
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('reviewScreen').style.display = 'none';
+    document.getElementById('reviewBar').style.display = 'none';
+    document.getElementById('formWrap').style.display = 'block';
+    document.getElementById('submitBar').style.display = 'flex';
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = 'Xem lại & Gửi báo cáo';
+    window.scrollTo({top:0});
+  });
+</script>
+
+</body>
+</html>
