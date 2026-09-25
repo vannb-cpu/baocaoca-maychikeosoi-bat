@@ -344,7 +344,7 @@
 
         <div class="field" data-required="true" data-name="Họ tên trưởng ca">
           <label class="q">Họ tên trưởng ca<span class="req">*</span></label>
-          <select name="ho_ten_truong_ca" data-field="ho_ten_truong_ca">
+          <select name="ho_ten_truong_ca" data-field="ho_ten_truong_ca" id="hoTenTruongCaSelect">
             <option value="" disabled selected>— Chọn tên —</option>
             <option value="Lê Huỳnh Đức">Lê Huỳnh Đức</option>
             <option value="Nguyễn Minh Đức">Nguyễn Minh Đức</option>
@@ -353,7 +353,11 @@
             <option value="Dương Trung Tuấn">Dương Trung Tuấn</option>
             <option value="Lý Hữu Xuân">Lý Hữu Xuân</option>
             <option value="Triệu Đình Vượng">Triệu Đình Vượng</option>
+            <option value="__khac__">Khác (tự điền)</option>
           </select>
+          <div class="other-row" id="hoTenTruongCaKhacRow" style="display:none;">
+            <input type="text" data-field="ho_ten_truong_ca_khac" placeholder="Nhập tên">
+          </div>
           <div class="error-msg">Nhập họ tên trưởng ca.</div>
         </div>
 
@@ -460,9 +464,10 @@
         <input type="number" inputmode="numeric" data-field="thay_luoi_thu_cap">
       </div>
 
-      <div class="field" data-required="true" data-name="Tổng thời gian dừng máy trong ca (phút)">
-        <label class="q">Tổng thời gian dừng máy trong ca (phút)<span class="req">*</span></label>
-        <input type="number" inputmode="numeric" data-field="thoi_gian_dung_may">
+      <div class="field" data-required="true" data-name="Tổng thời gian dừng máy trong ca">
+        <label class="q">Tổng thời gian dừng máy trong ca<span class="req">*</span></label>
+        <div class="hint">Ghi tự do, ví dụ: 30 phút, 1 tiếng 30 phút, hoặc 0 nếu không dừng.</div>
+        <input type="text" data-field="thoi_gian_dung_may" placeholder="VD: 1 tiếng 30 phút">
         <div class="error-msg">Nhập tổng thời gian dừng máy (có thể ghi 0).</div>
       </div>
 
@@ -584,7 +589,7 @@
     nl_do_dang_kg: 'NL múc ra/dở dang (kg)',
     thay_luoi_so_cap: 'Thay lưới sơ cấp',
     thay_luoi_thu_cap: 'Thay lưới thứ cấp',
-    thoi_gian_dung_may: 'TG dừng máy (phút)',
+    thoi_gian_dung_may: 'TG dừng máy',
     ly_do_dung_may: 'Lý do dừng máy',
     ve_sinh_hut_chan_khong: 'Vệ sinh hút chân không',
     co_su_co: 'Có sự cố thiết bị',
@@ -656,7 +661,12 @@
       return Array.from(radios).some(r => r.checked);
     }
     const el = field.querySelector('input[type=text], input[type=number], input[type=date], select, textarea');
-    return el ? (el.value !== null && el.value.toString().trim() !== '') : false;
+    let filled = el ? (el.value !== null && el.value.toString().trim() !== '') : false;
+    if(filled && field.dataset.name === 'Họ tên trưởng ca' && el.value === '__khac__'){
+      const khac = field.querySelector('input[data-field="ho_ten_truong_ca_khac"]');
+      filled = khac && khac.value.trim() !== '';
+    }
+    return filled;
   }
 
   function validate(){
@@ -704,7 +714,19 @@
         data[el.dataset.field] = el.value;
       }
     });
+    if(data.ho_ten_truong_ca === '__khac__'){
+      data.ho_ten_truong_ca = (data.ho_ten_truong_ca_khac || '').trim();
+    }
+    delete data.ho_ten_truong_ca_khac;
     return data;
+  }
+
+  const hoTenSelect = document.getElementById('hoTenTruongCaSelect');
+  const hoTenKhacRow = document.getElementById('hoTenTruongCaKhacRow');
+  if(hoTenSelect && hoTenKhacRow){
+    hoTenSelect.addEventListener('change', () => {
+      hoTenKhacRow.style.display = hoTenSelect.value === '__khac__' ? 'block' : 'none';
+    });
   }
 
   function collectBlock(block){
